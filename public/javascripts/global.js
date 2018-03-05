@@ -13,6 +13,9 @@ $(document).ready(function() {
     // Add User Button Click
     $('#btnAddUser').on('click', addUser);
 
+    // Delete User Link Click
+    $('#userList tabel tbody').on('click', 'td a.linkdeleteuser', deleteUser);
+
 });
 
 // Functions =============================================================
@@ -70,19 +73,68 @@ function showUserInfo(event) {
 function addUser(event) {
     event.preventDefault();
 
-    // Basic validation - increase errorCount if any fields are blank
+    // Super basic validation - increase errorCount variable if any fields are blank
     var errorCount = 0;
     $('#addUser input').each(function(index, val) {
         if($(this).val() === '') { errorCount++; }
     });
 
-    // Check and make sure errorCount's still 0
+    // Check and make sure errorCount's still at zero
     if(errorCount === 0) {
 
         // If it is, compile all user info into one object
         var newUser = {
-            'username' = $('#adduser fieldset input#inputUserName').val(),
-            ''
+            'username': $('#addUser fieldset input#inputUserName').val(),
+            'email': $('#addUser fieldset input#inputUserEmail').val(),
+            'fullname': $('#addUser fieldset input#inputUserFullname').val(),
+            'age': $('#addUser fieldset input#inputUserAge').val(),
+            'location': $('#addUser fieldset input#inputUserLocation').val(),
+            'gender': $('#addUser fieldset input#inputUserGender').val()
         }
+
+        // Use AJAX to post the object to our adduser service
+        $.ajax({
+            type: 'POST',
+            data: newUser,
+            url: '/users/adduser',
+            dataType: 'JSON'
+        }).done(function( response ) {
+
+            // Check for successful (blank) response
+            if (response.msg === '') {
+
+                // Clear the form inputs
+                $('#addUser fieldset input').val('');
+
+                // Update the table
+                populateTable();
+
+            }
+            else {
+
+                // If something goes wrong, alert the error message that our service returned
+                alert('Error: ' + response.msg);
+
+            }
+        });
+    }
+    else {
+        // If errorCount is more than 0, error out
+        alert('Please fill in all fields');
+        return false;
+    }
+};
+
+// Delete User
+function deleteUser(event) {
+    event.preventDefault();
+
+    // Pop up confirmation
+    var confirmation = confirm('Are you sure you want to delete this user?');
+
+    // Check and make sure the user confirmed
+    if (confirmation === true) {
+
+        // If they did 
     }
 }
