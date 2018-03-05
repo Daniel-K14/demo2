@@ -7,14 +7,14 @@ $(document).ready(function() {
     // Populate the user table on initial page load
     populateTable();
 
-    // Username Link Click
+    // Username link click
     $('#userList table tbody').on('click', 'td a.linkshowuser', showUserInfo);
 
-    // Add User Button Click
+    // Add User button click
     $('#btnAddUser').on('click', addUser);
 
-    // Delete User Link Click
-    $('#userList tabel tbody').on('click', 'td a.linkdeleteuser', deleteUser);
+    // Delete User link click
+    $('#userList table tbody').on('click', 'td a.linkdeleteuser', deleteUser);
 
 });
 
@@ -29,12 +29,13 @@ function populateTable() {
     // jQuery AJAX call for JSON
     $.getJSON( '/users/userlist', function( data ) {
 
+        // Stick our user data array into a userlist variable in the global object
         userListData = data;
 
         // For each item in our JSON, add a table row and cells to the content string
         $.each(data, function(){
             tableContent += '<tr>';
-            tableContent += '<td><a href="#" class="linkshowuser" rel="' + this.username + '">' + this.username + '</a></td>';
+            tableContent += '<td><a href="#" class="linkshowuser" rel="' + this.username + '" title="Show Details">' + this.username + '</a></td>';
             tableContent += '<td>' + this.email + '</td>';
             tableContent += '<td><a href="#" class="linkdeleteuser" rel="' + this._id + '">delete</a></td>';
             tableContent += '</tr>';
@@ -45,28 +46,27 @@ function populateTable() {
     });
 };
 
-// Show user information
+// Show User Info
 function showUserInfo(event) {
 
-    // Prevent link from Firing
+    // Prevent Link from Firing
     event.preventDefault();
 
     // Retrieve username from link rel attribute
     var thisUserName = $(this).attr('rel');
 
-    // Get index of object based on id value
-    var arrayPosition = userListData.map(function(arrayItem) {
-        return arrayItem.username;
-    }).indexOf(thisUserName);
+    // Get Index of object based on id value
+    var arrayPosition = userListData.map(function(arrayItem) { return arrayItem.username; }).indexOf(thisUserName);
 
     // Get our User Object
     var thisUserObject = userListData[arrayPosition];
 
-    // Populate Info Box
+    //Populate Info Box
     $('#userInfoName').text(thisUserObject.fullname);
     $('#userInfoAge').text(thisUserObject.age);
     $('#userInfoGender').text(thisUserObject.gender);
-    $('#userInfoLocation').text(thisUserObject.age);
+    $('#userInfoLocation').text(thisUserObject.location);
+
 };
 
 // Add User
@@ -127,14 +127,39 @@ function addUser(event) {
 
 // Delete User
 function deleteUser(event) {
+
     event.preventDefault();
 
-    // Pop up confirmation
+    // Pop up a confirmation dialog
     var confirmation = confirm('Are you sure you want to delete this user?');
 
     // Check and make sure the user confirmed
     if (confirmation === true) {
 
-        // If they did 
+        // If they did, do our delete
+        $.ajax({
+            type: 'DELETE',
+            url: '/users/deleteuser/' + $(this).attr('rel')
+        }).done(function( response ) {
+
+            // Check for a successful (blank) response
+            if (response.msg === '') {
+            }
+            else {
+                alert('Error: ' + response.msg);
+            }
+
+            // Update the table
+            populateTable();
+
+        });
+
     }
-}
+    else {
+
+        // If they said no to the confirm, do nothing
+        return false;
+
+    }
+
+};
